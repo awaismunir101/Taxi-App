@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Taxi Fare">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Taxi Fare</title>
+<style>
+:root{--bg:#000;--card:#141412;--line:#2c2a24;--amber:#f5b335;--amber-d:#c98f1c;--text:#f6f1e4;--muted:#a59f8f;--err:#ff7a6b;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100dvh;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 28px)}
+main{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{margin:0 0 2px;font-size:22px;font-weight:700;letter-spacing:.2px}
+h1 span{color:var(--amber)}
+.seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+.seg button{min-height:56px;border:0;border-radius:11px;background:transparent;color:var(--muted);font:600 16px/1.15 inherit;font-family:inherit;padding:6px 4px}
+.seg button[aria-checked=true]{background:var(--amber);color:#000}
+.info{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:16px;line-height:1.4}
+.info b{color:var(--amber)}
+.info small{display:block;color:var(--muted);font-size:14px}
+.hol{display:flex;align-items:center;gap:12px;margin-top:10px;min-height:44px;font-size:16px}
+.hol input{width:28px;height:28px;accent-color:var(--amber)}
+.field label{display:block;margin:0 2px 6px;font-size:16px;color:var(--muted);font-weight:600}
+.box{display:flex;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:0 16px}
+.box:focus-within{border-color:var(--amber)}
+.box.bad{border-color:var(--err)}
+.box input{flex:1;min-width:0;height:68px;border:0;outline:0;background:transparent;color:var(--text);font:600 34px/1 inherit;font-family:inherit;font-variant-numeric:tabular-nums}
+.box span{font-size:20px;color:var(--muted);font-weight:600}
+.err{min-height:0;margin:6px 2px 0;color:var(--err);font-size:15px}
+.err:empty{display:none}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.btn{min-height:68px;border-radius:16px;border:0;font:700 22px/1 inherit;font-family:inherit}
+.go{background:var(--amber);color:#000}
+.go:active{background:var(--amber-d)}
+.clear{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.meter{background:#0a0a08;border:2px solid var(--amber);border-radius:20px;padding:16px 18px 14px;text-align:right}
+.meter .lbl{font-size:16px;color:var(--muted);text-align:left}
+.meter .big{font-size:68px;line-height:1.05;font-weight:800;color:var(--amber);font-variant-numeric:tabular-nums;letter-spacing:-1px;word-break:break-all}
+table{width:100%;border-collapse:collapse;font-size:17px;font-variant-numeric:tabular-nums}
+.bd{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 14px}
+td{padding:11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:12px}
+td small{display:block;color:var(--muted);font-size:14px;font-weight:400}
+tr.tot td{border-bottom:0;font-size:20px;font-weight:800;color:var(--amber)}
+.rate{margin:0 2px;color:var(--muted);font-size:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Taxi <span>Fare</span></h1>
+
+  <div class="seg" role="radiogroup" aria-label="Pricing period" id="seg">
+    <button role="radio" data-mode="auto">Auto</button>
+    <button role="radio" data-mode="day">Daytime</button>
+    <button role="radio" data-mode="evening">Evening / weekend</button>
+  </div>
+
+  <div class="info" id="info" aria-live="polite">
+    <div id="infoMain"></div>
+    <small id="infoSub"></small>
+    <label class="hol" id="holRow"><input type="checkbox" id="hol"> Today is a public holiday</label>
+  </div>
+
+  <div class="field">
+    <label for="km">Distance</label>
+    <div class="box" id="kmBox"><input id="km" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocorrect="off" placeholder="0"><span>km</span></div>
+    <p class="err" id="kmErr" role="alert"></p>
+  </div>
+  <div class="field">
+    <label for="min">Duration</label>
+    <div class="box" id="minBox"><input id="min" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocorrect="off" placeholder="0"><span>min</span></div>
+    <p class="err" id="minErr" role="alert"></p>
+  </div>
+
+  <div class="row">
+    <button class="btn go" id="calc" type="button">Calculate fare</button>
+    <button class="btn clear" id="clear" type="button">Clear</button>
+  </div>
+
+  <section id="result" hidden aria-live="polite">
+    <div class="meter"><div class="lbl">Customer fare</div><div class="big" id="total"></div></div>
+    <p class="rate" id="rateLine"></p>
+    <div class="bd"><table id="bd"></table></div>
+  </section>
+</main>
+<script src="fare.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
